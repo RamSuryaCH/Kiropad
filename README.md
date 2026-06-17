@@ -8,7 +8,16 @@
 
 ---
 
-## How It Works
+## About the Project
+
+KiroPad lets you control [Kiro AI](https://kiro.dev) remotely from your phone. It consists of two parts:
+
+- **Desktop app** (macOS) — an Electron app that runs `kiro-cli`, manages a Cloudflare tunnel for internet access, and displays a QR code for easy pairing.
+- **Mobile app** (Android & iOS) — a React Native Expo app that connects to the desktop app over WebSocket, letting you send prompts, trigger quick actions, and stream AI responses in real time.
+
+No manual IP entry. No same-network requirement. Works over cellular, anywhere in the world.
+
+### How It Works
 
 ```
 ┌─────────────────────────┐         ┌─────────────────────────┐
@@ -21,32 +30,31 @@
 └─────────────────────────┘         └─────────────────────────┘
 ```
 
-1. **Open KiroPad** on your Mac — a QR code and 6-digit code appear
-2. **Scan the QR** with KiroPad on your phone (or enter the code manually)
+1. **Open KiroPad** on your Mac — a QR code and 6-digit code appear.
+2. **Scan the QR** with KiroPad on your phone (or enter the code manually).
 3. **Done** — you're paired. Start sending prompts from your phone.
-
-No manual IP entry. No same-network requirement. Works over cellular.
 
 ---
 
 ## Table of Contents
 
+- [About the Project](#about-the-project)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
   - [Download Pre-built Releases](#download-pre-built-releases)
   - [Build from Source](#build-from-source)
-- [Creating Releases](#creating-releases)
-  - [macOS Release (.dmg)](#macos-release-dmg)
-  - [Android Release (.apk)](#android-release-apk)
 - [Configuration](#configuration)
 - [Development](#development)
-- [Security](#security)
 - [Project Structure](#project-structure)
+- [Creating Releases](#creating-releases)
+- [Security](#security)
+- [Troubleshooting](#troubleshooting)
 - [Roadmap](#roadmap)
 - [iOS Support](#ios-support)
-- [Credits](#credits)
+- [Contributing](#contributing)
 - [License](#license)
+- [Author](#author)
 
 ---
 
@@ -55,33 +63,46 @@ No manual IP entry. No same-network requirement. Works over cellular.
 | Feature | Description |
 |---------|-------------|
 | 🔗 QR Pairing | Scan once, auto-reconnect forever |
-| 🌐 Internet access | Auto Cloudflare tunnel, no port forwarding |
-| 💬 Real-time chat | Stream kiro-cli responses live |
-| ⚡ Quick actions | Fix errors, write tests, git review, refactor |
-| 📊 Credits tracking | Real-time usage with plan info |
-| 🎨 Dark + Light theme | Follows your preference |
-| 📁 Project browser | Switch projects remotely |
-| 🤖 Model selection | Pick Claude, GPT, etc. |
+| 🌐 Internet Access | Auto Cloudflare tunnel — no port forwarding needed |
+| 💬 Real-time Chat | Stream kiro-cli responses live to your phone |
+| ⚡ Quick Actions | Fix errors, write tests, git review, refactor with one tap |
+| 📊 Credits Tracking | Real-time usage with plan info |
+| 🎨 Dark + Light Theme | Follows your system preference |
+| 📁 Project Browser | Switch between projects remotely |
+| 🤖 Model Selection | Pick Claude, GPT, or other supported models |
 | 🔒 Secure | Session tokens, rate limiting, brute-force protection |
 
 ---
 
 ## Prerequisites
 
-| Requirement | Version | Install |
-|-------------|---------|---------|
-| macOS | 12+ | — |
-| Node.js | 20+ | [nodejs.org](https://nodejs.org) or `brew install node` |
-| kiro-cli | Latest | `curl -fsSL https://cli.kiro.dev/install \| bash` |
-| cloudflared | Latest | `brew install cloudflared` |
-| git | Any | `xcode-select --install` |
-| KIRO_API_KEY | — | Set in `~/.zshrc`: `export KIRO_API_KEY=your-key` |
+Before you begin, make sure you have the following installed and configured:
 
-Run the prerequisite checker to verify your environment:
+| Requirement | Version | How to Install |
+|-------------|---------|----------------|
+| **macOS** | 12 (Monterey) or later | — |
+| **Node.js** | 20+ | [nodejs.org](https://nodejs.org) or `brew install node` |
+| **npm** | 10+ | Comes with Node.js |
+| **kiro-cli** | Latest | `curl -fsSL https://cli.kiro.dev/install \| bash` |
+| **cloudflared** | Latest | `brew install cloudflared` |
+| **Git** | Any | `xcode-select --install` |
+| **KIRO_API_KEY** | — | Set in `~/.zshrc`: `export KIRO_API_KEY=your-key` |
+
+### Verify Prerequisites
+
+Run the included checker script to confirm everything is set up:
 
 ```bash
 ./scripts/check.sh
 ```
+
+### Additional Requirements for Building Android Locally
+
+| Requirement | Version | How to Install |
+|-------------|---------|----------------|
+| **Android SDK** | Latest | [Android Studio](https://developer.android.com/studio) |
+| **Java (JDK)** | 17+ | `brew install openjdk@17` |
+| **ANDROID_HOME** | — | Set in shell profile (see [Build from Source](#build-the-android-app)) |
 
 ---
 
@@ -89,11 +110,11 @@ Run the prerequisite checker to verify your environment:
 
 ### Download Pre-built Releases
 
-The easiest way to get started — grab the latest builds from the [Releases](../../releases) page.
+The quickest way to get started — grab the latest builds from the [Releases](https://github.com/RamSuryaCH/Kiropad/releases) page.
 
 #### macOS Desktop App
 
-1. Go to [Releases](../../releases) and download `KiroPad-<version>-arm64.dmg` (Apple Silicon) or `KiroPad-<version>-x64.dmg` (Intel)
+1. Download `KiroPad-<version>-arm64.dmg` (Apple Silicon) or `KiroPad-<version>-x64.dmg` (Intel) from [Releases](https://github.com/RamSuryaCH/Kiropad/releases)
 2. Open the `.dmg` file
 3. Drag **KiroPad** to your **Applications** folder
 4. Launch KiroPad from Applications (right-click → Open on first launch to bypass Gatekeeper)
@@ -101,9 +122,9 @@ The easiest way to get started — grab the latest builds from the [Releases](..
 
 #### Android App
 
-1. Go to [Releases](../../releases) and download `KiroPad-release.apk`
+1. Download `KiroPad-release.apk` from [Releases](https://github.com/RamSuryaCH/Kiropad/releases)
 2. Transfer the APK to your Android device (or download directly on the device)
-3. Open the APK — you may need to enable **"Install from unknown sources"** in Settings → Security
+3. Open the APK — enable **"Install from unknown sources"** in Settings → Security if prompted
 4. Open KiroPad and scan the QR code displayed on your Mac
 
 #### iOS App
@@ -114,26 +135,45 @@ See [iOS Support](#ios-support) below for TestFlight and App Store options.
 
 ### Build from Source
 
-#### Clone the repository
+#### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/ramsuryachelluboyina/kiropad.git
-cd kiropad
+git clone https://github.com/RamSuryaCH/Kiropad.git
+cd Kiropad
 ```
 
-#### Build the macOS Desktop App
+#### 2. Build the macOS Desktop App
 
 ```bash
 cd desktop
 npm install
-npm run dev        # Run in development mode
-# or
-npm run dist       # Build distributable .dmg
+```
+
+Run in development mode:
+
+```bash
+npm run dev
+```
+
+Or build a distributable `.dmg`:
+
+```bash
+npm run dist
 ```
 
 The built `.dmg` will be in `desktop/dist/`.
 
-#### Build the Android App
+#### 3. Build the Android App
+
+First, set up your Android environment:
+
+```bash
+# Add to ~/.zshrc or ~/.bash_profile
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$ANDROID_HOME/platform-tools:$PATH
+```
+
+Then build:
 
 ```bash
 cd app
@@ -145,244 +185,20 @@ cd android
 
 The signed APK will be at `app/android/app/build/outputs/apk/release/app-release.apk`.
 
-> **Note:** Building Android requires the [Android SDK](https://developer.android.com/studio) and Java 17+.
-
-#### Build with EAS (recommended for production)
+#### 4. Build with EAS (Recommended for Production)
 
 ```bash
 cd app
 npm install -g eas-cli
 eas login
 eas build -p android --profile production
-```
-
----
-
-## Creating Releases
-
-### macOS Release (.dmg)
-
-KiroPad uses [electron-builder](https://www.electron.build/) to package the macOS app as a `.dmg` and `.zip`.
-
-#### Step 1: Prepare
-
-```bash
-cd desktop
-npm install
-```
-
-#### Step 2: Build the distributable
-
-```bash
-npm run dist
-```
-
-This runs `tsc` (TypeScript compile) then `electron-builder --mac --publish never`, producing:
-
-- `dist/KiroPad-<version>-arm64.dmg` — Apple Silicon installer
-- `dist/KiroPad-<version>-arm64.zip` — Portable zip
-
-#### Step 3: (Optional) Build for Intel Macs
-
-```bash
-npx electron-builder --mac --x64 --publish never
-```
-
-#### Step 4: Code signing (recommended for distribution)
-
-For public distribution, sign and notarize the app:
-
-```bash
-# Set environment variables
-export CSC_LINK=path/to/your-certificate.p12
-export CSC_KEY_PASSWORD=your-certificate-password
-export APPLE_ID=your-apple-id@email.com
-export APPLE_APP_SPECIFIC_PASSWORD=your-app-password
-export APPLE_TEAM_ID=your-team-id
-
-# Build with signing + notarization
-npx electron-builder --mac --publish never
-```
-
-> Without code signing, users will see a Gatekeeper warning on first launch. They can bypass it with right-click → Open.
-
-#### Step 5: Upload to GitHub Releases
-
-```bash
-# Tag the release
-git tag v2.0.0
-git push origin v2.0.0
-
-# Create a GitHub release (requires gh CLI)
-gh release create v2.0.0 \
-  desktop/dist/KiroPad-2.0.0-arm64.dmg \
-  desktop/dist/KiroPad-2.0.0-arm64.zip \
-  --title "KiroPad v2.0.0" \
-  --notes "Release notes here"
-```
-
----
-
-### Android Release (.apk)
-
-There are two paths to create an Android release: local Gradle build or EAS Build (cloud).
-
-#### Option A: Local Build (Gradle)
-
-##### Step 1: Prerequisites
-
-- Android SDK installed (via [Android Studio](https://developer.android.com/studio))
-- Java 17+ (`brew install openjdk@17`)
-- `ANDROID_HOME` set in your shell profile
-
-```bash
-export ANDROID_HOME=$HOME/Library/Android/sdk
-export PATH=$ANDROID_HOME/platform-tools:$PATH
-```
-
-##### Step 2: Generate a signing keystore (first time only)
-
-```bash
-keytool -genkeypair -v \
-  -storetype PKCS12 \
-  -keystore kiropad-release.keystore \
-  -alias kiropad \
-  -keyalg RSA \
-  -keysize 2048 \
-  -validity 10000
-```
-
-Store the keystore securely. You'll need it for every future release.
-
-##### Step 3: Configure signing in Gradle
-
-Create or edit `app/android/app/gradle.properties`:
-
-```properties
-KIROPAD_UPLOAD_STORE_FILE=../../kiropad-release.keystore
-KIROPAD_UPLOAD_KEY_ALIAS=kiropad
-KIROPAD_UPLOAD_STORE_PASSWORD=your-store-password
-KIROPAD_UPLOAD_KEY_PASSWORD=your-key-password
-```
-
-Add signing config to `app/android/app/build.gradle`:
-
-```groovy
-android {
-    signingConfigs {
-        release {
-            storeFile file(KIROPAD_UPLOAD_STORE_FILE)
-            storePassword KIROPAD_UPLOAD_STORE_PASSWORD
-            keyAlias KIROPAD_UPLOAD_KEY_ALIAS
-            keyPassword KIROPAD_UPLOAD_KEY_PASSWORD
-        }
-    }
-    buildTypes {
-        release {
-            signingConfig signingConfigs.release
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-```
-
-##### Step 4: Build the APK
-
-```bash
-cd app
-npx expo prebuild --platform android
-cd android
-./gradlew assembleRelease
-```
-
-The signed APK will be at:
-```
-app/android/app/build/outputs/apk/release/app-release.apk
-```
-
-##### Step 5: (Optional) Build AAB for Google Play
-
-```bash
-./gradlew bundleRelease
-```
-
-Output: `app/android/app/build/outputs/bundle/release/app-release.aab`
-
-#### Option B: EAS Build (Cloud — recommended)
-
-[EAS Build](https://docs.expo.dev/build/introduction/) handles signing, building, and distribution in the cloud.
-
-##### Step 1: Install and configure EAS
-
-```bash
-npm install -g eas-cli
-eas login
-```
-
-##### Step 2: Configure build profiles
-
-Create or verify `app/eas.json`:
-
-```json
-{
-  "build": {
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "android": {
-        "buildType": "app-bundle"
-      }
-    }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./google-services.json",
-        "track": "production"
-      }
-    }
-  }
-}
-```
-
-##### Step 3: Build
-
-```bash
-cd app
-
-# APK for direct distribution
-eas build -p android --profile preview
-
-# AAB for Google Play
-eas build -p android --profile production
-```
-
-##### Step 4: Submit to Google Play (optional)
-
-```bash
-eas submit -p android --profile production
-```
-
-#### Upload Android Release to GitHub
-
-```bash
-# Copy APK to project root with a clean name
-cp app/android/app/build/outputs/apk/release/app-release.apk KiroPad-release.apk
-
-# Upload to GitHub release
-gh release upload v2.0.0 KiroPad-release.apk
 ```
 
 ---
 
 ## Configuration
 
-Environment variables for the Mac app (optional):
+Environment variables for the Mac app (all optional):
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -411,6 +227,92 @@ cd desktop && npm test
 
 ---
 
+## Project Structure
+
+```
+Kiropad/
+├── desktop/             # Electron macOS app (bridge + tunnel + pairing UI)
+│   ├── src/             # Main process TypeScript source
+│   ├── renderer/        # Frontend HTML/CSS/JS
+│   └── assets/          # App icons
+├── app/                 # React Native Expo mobile app (Android & iOS)
+├── packages/
+│   └── protocol/        # Shared TypeScript types and constants
+├── scripts/             # Install/check scripts
+├── docs/                # Additional docs (iOS build guide)
+├── CONTRIBUTING.md      # Contribution guidelines
+├── LICENSE              # MIT License
+└── README.md            # This file
+```
+
+---
+
+## Creating Releases
+
+### macOS Release (.dmg)
+
+```bash
+cd desktop
+npm install
+npm run dist
+```
+
+This produces:
+- `dist/KiroPad-<version>-arm64.dmg` — Apple Silicon installer
+- `dist/KiroPad-<version>-arm64.zip` — Portable zip
+
+For Intel Macs:
+
+```bash
+npx electron-builder --mac --x64 --publish never
+```
+
+#### Code Signing (recommended for distribution)
+
+```bash
+export CSC_LINK=path/to/your-certificate.p12
+export CSC_KEY_PASSWORD=your-certificate-password
+export APPLE_ID=your-apple-id@email.com
+export APPLE_APP_SPECIFIC_PASSWORD=your-app-password
+export APPLE_TEAM_ID=your-team-id
+
+npx electron-builder --mac --publish never
+```
+
+### Android Release (.apk)
+
+#### Local Build
+
+```bash
+cd app
+npx expo prebuild --platform android
+cd android
+./gradlew assembleRelease
+```
+
+#### EAS Build (Cloud)
+
+```bash
+cd app
+eas build -p android --profile preview    # APK for direct distribution
+eas build -p android --profile production # AAB for Google Play
+```
+
+### Upload to GitHub Releases
+
+```bash
+git tag v2.0.0
+git push origin v2.0.0
+
+gh release create v2.0.0 \
+  desktop/dist/KiroPad-2.0.0-arm64.dmg \
+  KiroPad-release.apk \
+  --title "KiroPad v2.0.0" \
+  --notes "Release notes here"
+```
+
+---
+
 ## Security
 
 KiroPad takes security seriously:
@@ -427,20 +329,16 @@ KiroPad takes security seriously:
 
 ---
 
-## Project Structure
+## Troubleshooting
 
-```
-kiropad/
-├── desktop/           Electron macOS app (bridge + tunnel + pairing UI)
-├── app/               React Native Expo mobile app
-├── packages/
-│   └── protocol/      Shared TypeScript types and constants
-├── scripts/           Install/check scripts
-├── docs/              Additional documentation (iOS build guide)
-├── LICENSE            MIT
-├── CONTRIBUTING.md    How to contribute
-└── README.md          This file
-```
+| Issue | Solution |
+|-------|----------|
+| Gatekeeper blocks the macOS app | Right-click the app → Open, or run `xattr -cr /Applications/KiroPad.app` |
+| QR code not appearing | Ensure `cloudflared` is installed and your network allows outbound connections |
+| Phone can't connect | Check that both devices have internet access; the tunnel doesn't require same network |
+| `kiro-cli` not found | Run the install script: `curl -fsSL https://cli.kiro.dev/install \| bash` |
+| Android APK won't install | Enable "Install from unknown sources" in Settings → Security |
+| Build fails on Apple Silicon | Make sure you're using the arm64 version of Node.js |
 
 ---
 
@@ -476,26 +374,25 @@ eas submit -p ios                     # Submit to App Store
 
 ---
 
-## Troubleshooting
+## Contributing
 
-| Issue | Solution |
-|-------|----------|
-| Gatekeeper blocks the macOS app | Right-click the app → Open, or run `xattr -cr /Applications/KiroPad.app` |
-| QR code not appearing | Ensure `cloudflared` is installed and your network allows outbound connections |
-| Phone can't connect | Check that both devices have internet access; the tunnel doesn't require same network |
-| `kiro-cli` not found | Run the install script: `curl -fsSL https://cli.kiro.dev/install \| bash` |
-| Android APK won't install | Enable "Install from unknown sources" in Settings → Security |
-| Build fails on Apple Silicon | Make sure you're using the arm64 version of Node.js |
+Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) guide for details on the process for submitting pull requests.
 
 ---
 
-## Credits
-
-Built by [Ram Surya Chelluboyina](https://github.com/ramsuryachelluboyina)
-
-Powered by [Kiro AI](https://kiro.dev) · Built with [React Native](https://reactnative.dev) + [Electron](https://electronjs.org)
-
 ## License
 
-MIT — see [LICENSE](LICENSE)
-# Kiropad
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Author
+
+**Ram Surya Chelluboyina**
+
+- GitHub: [@RamSuryaCH](https://github.com/RamSuryaCH)
+- LinkedIn: [Ram Surya Chelluboyina](https://www.linkedin.com/in/ram-surya-chelluboyina/)
+
+---
+
+Powered by [Kiro AI](https://kiro.dev) · Built with [React Native](https://reactnative.dev) + [Electron](https://electronjs.org)
