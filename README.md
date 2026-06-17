@@ -491,7 +491,7 @@ eas submit -p ios                     # Submit to App Store
 
 ## Credits
 
-Built by [Ram Surya Chelluboyina](https://github.com/ramsuryachelluboyina)
+Built by [Ram Surya Chelluboyina](https://github.com/RamSuryaCH/)
 
 Powered by [Kiro AI](https://kiro.dev) · Built with [React Native](https://reactnative.dev) + [Electron](https://electronjs.org)
 
