@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KiroPad</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0F0F14; --surface: #1A1A24; --card: #22222E; --border: #2A2A3A;
+      --accent: #8B5CF6; --accent-glow: rgba(139,92,246,0.12); --accent-soft: #A78BFA;
+      --text-primary: #F1F1F4; --text-secondary: #A0A0B8; --text-muted: #6B6B80;
+      --success: #22C55E; --warning: #F59E0B; --error: #EF4444; --radius: 16px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      background: var(--bg); color: var(--text-primary);
+      height: 100vh; overflow: hidden;
+      -webkit-app-region: drag; user-select: none;
+    }
+    .container {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 44px 24px 20px; height: 100vh; gap: 14px; overflow-y: auto;
+    }
+    .title-bar { position: absolute; top: 0; left: 0; right: 0; height: 38px; }
+    .logo-section { display: flex; align-items: center; gap: 6px; }
+    .logo-text { font-size: 20px; font-weight: 800; letter-spacing: 2px; }
+    .logo-tag { font-size: 20px; font-weight: 800; letter-spacing: 1px; color: var(--accent-soft); }
+    .subtitle { color: var(--text-muted); font-size: 12px; }
+
+    /* QR Section */
+    .qr-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px; text-align: center; width: 100%;
+    }
+    .qr-code { margin: 12px auto; width: 180px; height: 180px; border-radius: 12px; }
+    .qr-code img { width: 100%; height: 100%; border-radius: 12px; }
+    .qr-placeholder {
+      width: 180px; height: 180px; margin: 12px auto; border-radius: 12px;
+      background: var(--card); border: 2px dashed var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); font-size: 12px;
+    }
+    .qr-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+    .qr-hint { font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; }
+
+    /* Code display (below QR) */
+    .code-row { display: flex; justify-content: center; gap: 6px; margin: 10px 0 4px; }
+    .code-digit {
+      width: 36px; height: 44px; display: flex; align-items: center; justify-content: center;
+      background: var(--card); border: 2px solid var(--accent); border-radius: 8px;
+      font-size: 22px; font-weight: 800; font-family: 'SF Mono', monospace;
+      color: var(--text-primary); box-shadow: 0 0 8px rgba(139,92,246,0.15);
+    }
+    .code-expiry { font-size: 10px; color: var(--text-muted); }
+    .code-expiry span { color: var(--accent-soft); font-weight: 600; }
+
+    /* Tunnel */
+    .tunnel-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px; width: 100%;
+    }
+    .tunnel-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .tunnel-label { font-size: 10px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; }
+    .tunnel-status { display: flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot.active { background: var(--success); animation: pulse 2s infinite; }
+    .dot.connecting { background: var(--warning); animation: blink 1s infinite; }
+    .dot.error { background: var(--error); }
+    .tunnel-url-box {
+      background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+      padding: 8px 12px; font-family: 'SF Mono', monospace; font-size: 11px;
+      color: var(--accent-soft); word-break: break-all;
+      -webkit-app-region: no-drag; user-select: text; cursor: text;
+    }
+    .tunnel-url-box.placeholder { color: var(--text-muted); font-style: italic; }
+
+    /* Actions */
+    .actions { display: flex; gap: 8px; width: 100%; -webkit-app-region: no-drag; }
+    .btn {
+      flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 10px;
+      background: var(--surface); color: var(--text-primary); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s ease; text-align: center;
+    }
+    .btn:hover { background: var(--card); border-color: var(--accent); }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn-primary:hover { background: #7C3AED; }
+
+    /* Status */
+    .status-section {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px;
+    }
+    .status-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; }
+    .status-row + .status-row { border-top: 1px solid var(--border); }
+    .status-label { font-size: 11px; color: var(--text-secondary); }
+    .status-value { font-size: 11px; font-weight: 600; color: var(--text-primary); }
+    .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; background: var(--success); animation: pulse 2s infinite; }
+    .status-dot.offline { background: var(--text-muted); animation: none; }
+
+    .lockout-banner {
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px; padding: 10px 14px; width: 100%; text-align: center;
+      font-size: 12px; color: var(--error); display: none;
+    }
+
+    .instructions { text-align: center; color: var(--text-muted); font-size: 10px; line-height: 1.5; }
+    .instructions strong { color: var(--text-secondary); }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  </style>
+</head>
+<body>
+  <div class="title-bar"></div>
+  <div class="container">
+    <div class="logo-section">
+      <span class="logo-text">KIRO</span><span class="logo-tag">pad</span>
+    </div>
+    <p class="subtitle">Scan QR or enter code on your phone</p>
+
+    <!-- QR + Code -->
+    <div class="qr-section">
+      <p class="qr-label">Scan with KiroPad on your phone</p>
+      <div class="qr-code" id="qr-container">
+        <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
+      </div>
+      <div class="code-row" id="code-digits">
+        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
+        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
+      </div>
+      <p class="code-expiry">Code expires in <span id="expiry-timer">5:00</span></p>
+      <p class="qr-hint">Or manually: copy URL below → paste in app → enter code</p>
+    </div>
+
+    <!-- Lockout banner -->
+    <div class="lockout-banner" id="lockout-banner">
+      ⚠️ Too many failed attempts. Pairing locked for <span id="lockout-time">5:00</span>
+    </div>
+
+    <!-- Tunnel URL -->
+    <div class="tunnel-section">
+      <div class="tunnel-header">
+        <span class="tunnel-label">Connection URL</span>
+        <span class="tunnel-status">
+          <span class="dot connecting" id="tunnel-dot"></span>
+          <span id="tunnel-status-text" style="color:var(--warning)">Starting…</span>
+        </span>
+      </div>
+      <div class="tunnel-url-box placeholder" id="tunnel-url">Starting tunnel…</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-new-code">New Code</button>
+      <button class="btn" id="btn-copy-url">Copy URL</button>
+      <button class="btn" id="btn-disconnect">Disconnect</button>
+    </div>
+
+    <!-- Status -->
+    <div class="status-section">
+      <div class="status-row">
+        <span class="status-label">Server</span>
+        <span class="status-value"><span class="status-dot" id="status-dot"></span><span id="status-text">Running</span></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Devices</span>
+        <span class="status-value" id="device-count">0 connected</span>
+      </div>
+    </div>
+
+    <p class="instructions">
+      On your phone: open <strong>KiroPad</strong> → scan the QR code above.<br>
+      Works from anywhere — cellular, different Wi-Fi, anywhere.
+    </p>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const codeDigits = $('code-digits');
+    const expiryTimer = $('expiry-timer');
+    const tunnelUrl = $('tunnel-url');
+    const tunnelDot = $('tunnel-dot');
+    const tunnelStatusText = $('tunnel-status-text');
+    const qrContainer = $('qr-container');
+    const qrPlaceholder = $('qr-placeholder');
+    const lockoutBanner = $('lockout-banner');
+    const lockoutTime = $('lockout-time');
+
+    function updateCodeDisplay(code) {
+      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit">${d}</div>`).join('');
+    }
+
+    function updateTunnel(url, running) {
+      if (url) {
+        tunnelUrl.textContent = url.replace('https://', 'wss://');
+        tunnelUrl.classList.remove('placeholder');
+        tunnelDot.className = 'dot active';
+        tunnelStatusText.textContent = 'Live';
+        tunnelStatusText.style.color = 'var(--success)';
+      } else if (running) {
+        tunnelUrl.textContent = 'Starting tunnel…';
+        tunnelUrl.classList.add('placeholder');
+        tunnelDot.className = 'dot connecting';
+        tunnelStatusText.textContent = 'Starting…';
+        tunnelStatusText.style.color = 'var(--warning)';
+      } else {
+        tunnelUrl.textContent = 'Install cloudflared: brew install cloudflared';
+        tunnelUrl.classList.add('placeholder');
+        tunnelDot.className = 'dot error';
+        tunnelStatusText.textContent = 'Offline';
+        tunnelStatusText.style.color = 'var(--error)';
+      }
+    }
+
+    function updateQR(qrDataUrl) {
+      if (qrDataUrl) {
+        qrContainer.innerHTML = `<img src="${qrDataUrl}" alt="QR Code" />`;
+      } else {
+        qrContainer.innerHTML = `<div class="qr-placeholder">Waiting for tunnel…</div>`;
+      }
+    }
+
+    function updateState(state) {
+      if (state.pairingCode) updateCodeDisplay(state.pairingCode);
+      if (typeof state.connectedDevices === 'number') {
+        $('device-count').textContent = `${state.connectedDevices} connected`;
+      }
+      if (typeof state.isRunning === 'boolean') {
+        $('status-dot').className = state.isRunning ? 'status-dot' : 'status-dot offline';
+        $('status-text').textContent = state.isRunning ? 'Running' : 'Stopped';
+      }
+      updateTunnel(state.tunnelUrl, state.tunnelRunning);
+      updateQR(state.qrCode);
+
+      if (state.isLockedOut) {
+        lockoutBanner.style.display = 'block';
+        const min = Math.floor(state.lockoutSeconds / 60);
+        const sec = state.lockoutSeconds % 60;
+        lockoutTime.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+      } else {
+        lockoutBanner.style.display = 'none';
+      }
+    }
+
+    let expiryInterval, secondsLeft = 300;
+    function startExpiryTimer() {
+      secondsLeft = 300;
+      if (expiryInterval) clearInterval(expiryInterval);
+      expiryInterval = setInterval(() => {
+        secondsLeft = Math.max(0, secondsLeft - 1);
+        const min = Math.floor(secondsLeft / 60);
+        const sec = secondsLeft % 60;
+        expiryTimer.textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    $('btn-new-code').addEventListener('click', async () => {
+      await window.kiropad.regenerateCode();
+      startExpiryTimer();
+    });
+    $('btn-copy-url').addEventListener('click', () => {
+      const url = tunnelUrl.textContent;
+      if (url && !tunnelUrl.classList.contains('placeholder')) {
+        navigator.clipboard.writeText(url);
+        $('btn-copy-url').textContent = 'Copied!';
+        setTimeout(() => { $('btn-copy-url').textContent = 'Copy URL'; }, 2000);
+      }
+    });
+    $('btn-disconnect').addEventListener('click', () => window.kiropad.disconnectAll());
+
+    window.kiropad.onStateUpdate(updateState);
+    window.kiropad.getState().then(state => { updateState(state); startExpiryTimer(); });
+  </script>
+</body>
+</html>

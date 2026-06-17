@@ -1,0 +1,50 @@
+{
+  "name": "kiropad-desktop",
+  "version": "2.0.0",
+  "description": "KiroPad Mac — pair your phone with a 6-digit code and control Kiro AI remotely.",
+  "author": "Ram Surya Chelluboyina",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsc && electron .",
+    "build": "tsc",
+    "start": "electron .",
+    "test": "vitest run src/pairing.test.ts",
+    "pack": "tsc && electron-builder --mac",
+    "dist": "tsc && electron-builder --mac --publish never"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "qrcode-generator": "^2.0.4",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.9"
+  },
+  "build": {
+    "appId": "com.kiropad.desktop",
+    "productName": "KiroPad",
+    "asar": true,
+    "compression": "maximum",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "assets/icon.icns",
+      "target": ["dmg", "zip"],
+      "minimumSystemVersion": "12.0"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*",
+      "renderer/**/*",
+      "!**/*.test.*",
+      "!**/*.map"
+    ],
+    "dmg": {
+      "artifactName": "KiroPad-${version}-${arch}.dmg"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "@kiropad/protocol",
+  "version": "2.0.0",
+  "description": "Shared message types and constants for KiroPad protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "vitest": "^3.2.0"
+  }
+}
