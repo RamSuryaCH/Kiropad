@@ -59,12 +59,12 @@ const PROMPT_COOLDOWN_MS = 1000;
 /**
  * Sanitize a cwd path — must be absolute and not contain traversal.
  */
-function sanitizeCwd(cwd: string | undefined): string {
-  if (!cwd) return WORKSPACE;
+function sanitizeCwd(cwd: unknown): string {
+  if (!cwd || typeof cwd !== 'string') return WORKSPACE;
+  // Block obvious path traversal attempts before resolution
+  if (cwd.includes('..')) return WORKSPACE;
   const resolved = resolve(cwd);
   if (!isAbsolute(resolved)) return WORKSPACE;
-  // Block obvious path traversal attempts
-  if (resolved.includes('..')) return WORKSPACE;
   return resolved;
 }
 
