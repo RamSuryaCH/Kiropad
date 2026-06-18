@@ -327,7 +327,7 @@ export class BridgeServer extends EventEmitter {
     if (msg.resume) args.push('--resume');
 
     // Sanitize prompt — limit length
-    const prompt = String(msg.prompt || '').slice(0, 50_000);
+    const prompt = String(msg.prompt || '').slice(0, 30_000);
     if (!prompt.trim()) {
       this.send(ws, { type: 'error', text: 'Empty prompt' });
       return;
