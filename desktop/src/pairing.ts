@@ -1,13 +1,6 @@
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
-
-const SECURITY = {
-  MAX_PAIR_ATTEMPTS: 10,
-  LOCKOUT_DURATION_MS: 5 * 60 * 1000,
-  SESSION_TTL_MS: 7 * 24 * 60 * 60 * 1000,
-  CODE_TTL_MS: 5 * 60 * 1000,
-  MAX_SESSIONS: 5,
-};
+import { SECURITY } from '@kiropad/protocol';
 
 /**
  * PairingManager handles 6-digit code generation and validation
