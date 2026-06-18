@@ -174,7 +174,9 @@ export class BridgeServer extends EventEmitter {
         const child = this.activeChildren.get(ws);
         if (child) {
           this.activeChildren.delete(ws);
-          try { child.kill('SIGTERM'); } catch {}
+          try { child.kill('SIGTERM'); } catch (err) {
+            console.error('Failed to kill child process:', err);
+          }
         }
         lastPromptTime.delete(ws);
         this.devices.delete(ws);
@@ -296,7 +298,9 @@ export class BridgeServer extends EventEmitter {
     const child = this.activeChildren.get(ws);
     if (child) {
       this.activeChildren.delete(ws);
-      try { child.kill('SIGTERM'); } catch {}
+      try { child.kill('SIGTERM'); } catch (err) {
+        console.error('Failed to kill child process:', err);
+      }
       this.send(ws, { type: 'error', text: '\n[cancelled]' });
       this.send(ws, { type: 'done', code: 130 });
     }
@@ -520,7 +524,9 @@ export class BridgeServer extends EventEmitter {
             client.send(payload);
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error('Failed to broadcast credits:', err);
+      }
     });
   }
 
