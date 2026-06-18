@@ -14,11 +14,8 @@ const TRUST_ALL_TOOLS = process.env.KIROPAD_TRUST_ALL_TOOLS === '1';
 const KIRO_NOT_FOUND =
   'kiro-cli not found. Run: curl -fsSL https://cli.kiro.dev/install | bash';
 
-// eslint-disable-next-line no-control-regex
 const CSI_PATTERN = /[\u001B\u009B][[\]()#;?]*(?:(?:\d{1,4}(?:;\d{0,4})*)?[\dA-PR-TZcf-ntqry=><~])/g;
-// eslint-disable-next-line no-control-regex
 const OSC_PATTERN = /\u001B\][\s\S]*?(?:\u0007|\u001B\\)/g;
-// eslint-disable-next-line no-control-regex
 const CONTROL_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 
 function stripAnsi(input: string): string {
