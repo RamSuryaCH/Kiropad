@@ -65,10 +65,18 @@ function createTray(): void {
   tray.on('click', () => mainWindow?.show());
 }
 
+let cachedQRCode: string | null = null;
+let lastTunnelUrl: string | undefined = undefined;
+let lastPairingCode: string | undefined = undefined;
+
 async function generateQRCode(): Promise<string | null> {
   const url = tunnel?.url;
   const code = pairing?.currentCode;
   if (!url || !code) return null;
+
+  if (url === lastTunnelUrl && code === lastPairingCode && cachedQRCode !== null) {
+    return cachedQRCode;
+  }
 
   const payload = JSON.stringify({
     url: url.replace('https://', 'wss://'),
@@ -80,7 +88,10 @@ async function generateQRCode(): Promise<string | null> {
     const qr = qrcode(0, 'M');
     qr.addData(payload);
     qr.make();
-    return qr.createDataURL(4, 2);
+    cachedQRCode = qr.createDataURL(4, 2);
+    lastTunnelUrl = url;
+    lastPairingCode = code;
+    return cachedQRCode;
   } catch {
     return null;
   }
