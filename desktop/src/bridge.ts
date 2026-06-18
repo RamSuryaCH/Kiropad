@@ -3,7 +3,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { spawn, execSync, ChildProcessWithoutNullStreams } from 'child_process';
 import { readdir, readFile } from 'fs/promises';
-import { basename, dirname, join, resolve, isAbsolute } from 'path';
+import { basename, dirname, join, resolve, isAbsolute, relative } from 'path';
 import { homedir } from 'os';
 import { URL, fileURLToPath } from 'url';
 import { PairingManager } from './pairing';
@@ -63,8 +63,12 @@ function sanitizeCwd(cwd: string | undefined): string {
   if (!cwd) return WORKSPACE;
   const resolved = resolve(cwd);
   if (!isAbsolute(resolved)) return WORKSPACE;
-  // Block obvious path traversal attempts
-  if (resolved.includes('..')) return WORKSPACE;
+
+  const rel = relative(WORKSPACE, resolved);
+  // Block path traversal attempts
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    return WORKSPACE;
+  }
   return resolved;
 }
 
