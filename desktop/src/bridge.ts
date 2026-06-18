@@ -442,10 +442,11 @@ export class BridgeServer extends EventEmitter {
   }
 
   private async handleListProjects(ws: WebSocket): Promise<void> {
+    const ideProjects = await this.detectIdeProjects();
     this.send(ws, {
       type: 'projects',
-      projects: await this.resolveProjects(),
-      default: await this.defaultProject(),
+      projects: await this.resolveProjects(ideProjects),
+      default: await this.defaultProject(ideProjects),
     });
   }
 
@@ -549,16 +550,16 @@ export class BridgeServer extends EventEmitter {
     } catch { return []; }
   }
 
-  private async resolveProjects(): Promise<{ path: string; name: string; ide: boolean }[]> {
-    const ide = await this.detectIdeProjects();
+  private async resolveProjects(ideProjects?: string[]): Promise<{ path: string; name: string; ide: boolean }[]> {
+    const ide = ideProjects || await this.detectIdeProjects();
     const configured = (process.env.KIROPAD_PROJECTS || '')
       .split(',').map((p) => p.trim()).filter(Boolean);
     const paths = Array.from(new Set([...ide, WORKSPACE, ...configured]));
     return paths.map((p) => ({ path: p, name: basename(p) || p, ide: ide.includes(p) }));
   }
 
-  private async defaultProject(): Promise<string> {
-    const ide = await this.detectIdeProjects();
+  private async defaultProject(ideProjects?: string[]): Promise<string> {
+    const ide = ideProjects || await this.detectIdeProjects();
     return ide[0] || WORKSPACE;
   }
 }
