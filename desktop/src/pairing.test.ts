@@ -47,6 +47,12 @@ describe('PairingManager', () => {
       expect(token).toBeNull();
     });
 
+    it('uses "Unknown Device" when deviceName is undefined', () => {
+      pm.validateCode(pm.currentCode);
+      expect(pm.activeSessions).toHaveLength(1);
+      expect(pm.activeSessions[0].deviceName).toBe('Unknown Device');
+    });
+
     it('code is single-use (regenerates after success)', () => {
       const originalCode = pm.currentCode;
       pm.validateCode(originalCode, 'Device1');
