@@ -6,27 +6,25 @@ import os from 'os';
  */
 export function getLocalIP(): string {
   const interfaces = os.networkInterfaces();
+  let bestPriority = 99;
+  let result = '127.0.0.1';
 
-  // Prefer en0 (Wi-Fi on macOS) first
-  for (const name of ['en0', 'en1', 'Wi-Fi', 'Ethernet']) {
+  for (const name in interfaces) {
     const iface = interfaces[name];
     if (!iface) continue;
+
     for (const addr of iface) {
       if (addr.family === 'IPv4' && !addr.internal) {
-        return addr.address;
+        if (name === 'en0') return addr.address;
+
+        const p = name === 'en1' ? 1 : name === 'Wi-Fi' ? 2 : name === 'Ethernet' ? 3 : 4;
+        if (p < bestPriority) {
+          bestPriority = p;
+          result = addr.address;
+        }
       }
     }
   }
 
-  // Fallback: any non-internal IPv4
-  for (const iface of Object.values(interfaces)) {
-    if (!iface) continue;
-    for (const addr of iface) {
-      if (addr.family === 'IPv4' && !addr.internal) {
-        return addr.address;
-      }
-    }
-  }
-
-  return '127.0.0.1';
+  return result;
 }
