@@ -57,7 +57,6 @@ export class TunnelManager extends EventEmitter {
         '--no-autoupdate',
       ]);
     } catch (err) {
-      console.error('Failed to start cloudflared:', err);
       this.emit('error', 'cloudflared not found. Install: brew install cloudflared');
       return;
     }
