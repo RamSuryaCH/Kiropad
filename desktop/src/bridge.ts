@@ -184,7 +184,6 @@ export class BridgeServer extends EventEmitter {
 
     this.server.listen(this.port, '0.0.0.0', () => {
       this._isRunning = true;
-      console.log(`KiroPad bridge listening on ws://0.0.0.0:${this.port}`);
     });
 
     this.creditsInterval = setInterval(() => this.broadcastCredits(), 60_000);
