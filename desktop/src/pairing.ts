@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import crypto from 'crypto';
+import { DeviceSession } from '@kiropad/protocol';
 
 const SECURITY = {
   MAX_PAIR_ATTEMPTS: 10,
@@ -150,12 +151,4 @@ export class PairingManager extends EventEmitter {
   private static generateCode(): string {
     return crypto.randomInt(100000, 999999 + 1).toString();
   }
-}
-
-export interface DeviceSession {
-  token: string;
-  deviceName: string;
-  pairedAt: number;
-  lastSeen: number;
-  expiresAt: number;
 }
