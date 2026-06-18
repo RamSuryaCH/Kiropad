@@ -8,7 +8,7 @@
     "dev": "tsc && electron .",
     "build": "tsc",
     "start": "electron .",
-    "test": "vitest run src/pairing.test.ts",
+    "test": "vitest run",
     "pack": "tsc && electron-builder --mac",
     "dist": "tsc && electron-builder --mac --publish never"
   },
