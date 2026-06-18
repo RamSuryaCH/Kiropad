@@ -82,7 +82,6 @@ export class TunnelManager extends EventEmitter {
       if (match && !this._url) {
         this._url = match[0];
         this._running = true;
-        console.log(`Tunnel active: ${this._url}`);
         this.emit('url-ready', this._url);
       }
     });
@@ -94,13 +93,11 @@ export class TunnelManager extends EventEmitter {
       if (match && !this._url) {
         this._url = match[0];
         this._running = true;
-        console.log(`Tunnel active: ${this._url}`);
         this.emit('url-ready', this._url);
       }
     });
 
     proc.on('close', (code) => {
-      console.log(`cloudflared exited with code ${code}`);
       this._running = false;
       this._url = null;
       this.process = null;

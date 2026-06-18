@@ -153,7 +153,6 @@ app.whenReady().then(async () => {
   bridge.on('device-disconnected', () => void sendStateToRenderer());
 
   tunnel.on('url-ready', () => {
-    console.log(`Tunnel ready: ${tunnel!.url}`);
     void sendStateToRenderer();
   });
   tunnel.on('error', (msg: string) => {
