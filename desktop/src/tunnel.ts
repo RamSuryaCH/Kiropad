@@ -1,6 +1,9 @@
-import { spawn, ChildProcess, execSync } from 'child_process';
+import { spawn, ChildProcess, exec } from 'child_process';
 import { EventEmitter } from 'events';
-import { existsSync } from 'fs';
+import { promises as fsPromises } from 'fs';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 /**
  * TunnelManager automatically starts a Cloudflare quick tunnel
@@ -36,12 +39,12 @@ export class TunnelManager extends EventEmitter {
    * Start the cloudflared tunnel. Automatically parses the public URL
    * from cloudflared's stderr output.
    */
-  start(): void {
+  async start(): Promise<void> {
     if (this.process) return;
 
     // Electron packaged apps don't inherit the user's shell PATH.
     // Look for cloudflared in common locations.
-    const cloudflaredPath = this.findCloudflared();
+    const cloudflaredPath = await this.findCloudflared();
     if (!cloudflaredPath) {
       this.emit('error', 'cloudflared not found. Install: brew install cloudflared');
       return;
@@ -130,10 +133,10 @@ export class TunnelManager extends EventEmitter {
    */
   restart(): void {
     this.stop();
-    setTimeout(() => this.start(), 1000);
+    setTimeout(() => void this.start(), 1000);
   }
 
-  private findCloudflared(): string | null {
+  private async findCloudflared(): Promise<string | null> {
     // Check common install locations since packaged Electron apps
     // don't inherit the user's shell PATH
     const candidates = [
@@ -144,15 +147,19 @@ export class TunnelManager extends EventEmitter {
     ];
 
     for (const path of candidates) {
-      if (existsSync(path)) return path;
+      try {
+        await fsPromises.access(path);
+        return path;
+      } catch {}
     }
 
     // Last resort: try to find it via shell
     try {
-      const result = execSync('which cloudflared', {
+      const { stdout } = await execAsync('which cloudflared', {
         encoding: 'utf8',
         env: { ...process.env, PATH: `/opt/homebrew/bin:/usr/local/bin:/usr/bin:${process.env.PATH || ''}` },
-      }).trim();
+      });
+      const result = stdout.trim();
       if (result) return result;
     } catch {}
 
@@ -164,7 +171,7 @@ export class TunnelManager extends EventEmitter {
     this.retryTimer = setTimeout(() => {
       this.retryTimer = null;
       this._url = null;
-      this.start();
+      void this.start();
     }, 10_000);
   }
 }

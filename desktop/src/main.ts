@@ -112,7 +112,7 @@ app.whenReady().then(async () => {
   bridge.start();
 
   tunnel = new TunnelManager(PORT);
-  tunnel.start();
+  void tunnel.start();
 
   createWindow();
   createTray();
