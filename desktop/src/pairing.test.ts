@@ -1,11 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { PairingManager } from './pairing';
 
 describe('PairingManager', () => {
   let pm: PairingManager;
 
   beforeEach(() => {
+    vi.useFakeTimers();
     pm = new PairingManager();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('code generation', () => {
@@ -63,13 +68,11 @@ describe('PairingManager', () => {
 
     it('rejects expired code', () => {
       // Manually expire
-      vi.useFakeTimers();
       const code = pm.currentCode;
       vi.advanceTimersByTime(6 * 60 * 1000); // 6 minutes (past 5 min TTL)
       // Note: the timer will regenerate code, so we test with the OLD code
       const token = pm.validateCode(code, 'Device');
       expect(token).toBeNull();
-      vi.useRealTimers();
     });
   });
 
@@ -105,6 +108,19 @@ describe('PairingManager', () => {
       pm.validateCode(pm.currentCode, 'iPhone');
       expect(pm.activeSessions).toHaveLength(1);
       expect(pm.activeSessions[0].deviceName).toBe('iPhone');
+    });
+
+    it('cleans up expired sessions automatically', () => {
+      const token = pm.validateCode(pm.currentCode, 'TestDevice')!;
+      expect(pm.activeSessions).toHaveLength(1);
+
+      // Advance time past the session TTL + the cleanup interval
+      // SESSION_TTL_MS is 7 * 24 * 60 * 60 * 1000 = 604800000 ms
+      // The cleanup interval is 60_000 ms
+      vi.advanceTimersByTime(7 * 24 * 60 * 60 * 1000 + 60000);
+
+      expect(pm.activeSessions).toHaveLength(0);
+      expect(pm.validateSessionToken(token)).toBe(false);
     });
   });
 
