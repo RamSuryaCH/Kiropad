@@ -3,7 +3,7 @@ import http from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { spawn, execSync, ChildProcessWithoutNullStreams } from 'child_process';
 import { readdir, readFile } from 'fs/promises';
-import { basename, dirname, join, resolve, isAbsolute } from 'path';
+import { basename, dirname, join, resolve, isAbsolute, relative } from 'path';
 import { homedir } from 'os';
 import { URL, fileURLToPath } from 'url';
 import { PairingManager } from './pairing';
@@ -57,14 +57,14 @@ const lastPromptTime = new Map<WebSocket, number>();
 const PROMPT_COOLDOWN_MS = 1000;
 
 /**
- * Sanitize a cwd path — must be absolute and not contain traversal.
+ * Sanitize a cwd path — must be absolute, not contain traversal, and be bound to WORKSPACE.
  */
-function sanitizeCwd(cwd: string | undefined): string {
+export function sanitizeCwd(cwd: string | undefined): string {
   if (!cwd) return WORKSPACE;
-  const resolved = resolve(cwd);
-  if (!isAbsolute(resolved)) return WORKSPACE;
-  // Block obvious path traversal attempts
-  if (resolved.includes('..')) return WORKSPACE;
+  const resolved = resolve(WORKSPACE, cwd);
+  const rel = relative(WORKSPACE, resolved);
+  // Ensure the resolved path is within the WORKSPACE
+  if (rel.startsWith('..') || isAbsolute(rel)) return WORKSPACE;
   return resolved;
 }
 
