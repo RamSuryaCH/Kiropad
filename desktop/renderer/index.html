@@ -84,6 +84,7 @@
     }
     .btn:hover { background: var(--card); border-color: var(--accent); }
     .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
     .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
     .btn-primary:hover { background: #7C3AED; }
 
@@ -122,7 +123,7 @@
 
     <!-- QR + Code -->
     <div class="qr-section">
-      <p class="qr-label">Scan with KiroPad on your phone</p>
+      <p class="qr-label">Scan with Kiro app on your phone</p>
       <div class="qr-code" id="qr-container">
         <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
       </div>
@@ -171,7 +172,7 @@
     </div>
 
     <p class="instructions">
-      On your phone: open <strong>KiroPad</strong> → scan the QR code above.<br>
+      On your phone: open <strong>Kiro</strong> app → scan the QR code above.<br>
       Works from anywhere — cellular, different Wi-Fi, anywhere.
     </p>
   </div>
