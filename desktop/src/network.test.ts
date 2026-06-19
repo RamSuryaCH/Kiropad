@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getLocalIP } from './network';
+import { getLocalIP, clearCache } from './network';
 import os from 'os';
 
 vi.mock('os');
@@ -7,6 +7,7 @@ vi.mock('os');
 describe('getLocalIP', () => {
   afterEach(() => {
     vi.resetAllMocks();
+    clearCache();
   });
 
   it('prefers en0 (macOS Wi-Fi) over other interfaces', () => {
