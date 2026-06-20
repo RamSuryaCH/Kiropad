@@ -82,10 +82,12 @@
       background: var(--surface); color: var(--text-primary); font-size: 11px; font-weight: 600;
       cursor: pointer; transition: all 0.15s ease; text-align: center;
     }
-    .btn:hover { background: var(--card); border-color: var(--accent); }
-    .btn:active { transform: scale(0.97); }
+    .btn:hover:not(:disabled) { background: var(--card); border-color: var(--accent); }
+    .btn:active:not(:disabled) { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .btn-primary:hover { background: #7C3AED; }
+    .btn-primary:hover:not(:disabled) { background: #7C3AED; }
 
     /* Status */
     .status-section {
@@ -143,7 +145,7 @@
     <div class="tunnel-section">
       <div class="tunnel-header">
         <span class="tunnel-label">Connection URL</span>
-        <span class="tunnel-status">
+        <span class="tunnel-status" aria-live="polite">
           <span class="dot connecting" id="tunnel-dot"></span>
           <span id="tunnel-status-text" style="color:var(--warning)">Starting…</span>
         </span>
@@ -154,7 +156,7 @@
     <!-- Actions -->
     <div class="actions">
       <button class="btn btn-primary" id="btn-new-code">New Code</button>
-      <button class="btn" id="btn-copy-url">Copy URL</button>
+      <button class="btn" id="btn-copy-url" disabled>Copy URL</button>
       <button class="btn" id="btn-disconnect">Disconnect</button>
     </div>
 
@@ -193,24 +195,28 @@
     }
 
     function updateTunnel(url, running) {
+      const btnCopyUrl = $('btn-copy-url');
       if (url) {
         tunnelUrl.textContent = url.replace('https://', 'wss://');
         tunnelUrl.classList.remove('placeholder');
         tunnelDot.className = 'dot active';
         tunnelStatusText.textContent = 'Live';
         tunnelStatusText.style.color = 'var(--success)';
+        if (btnCopyUrl) btnCopyUrl.disabled = false;
       } else if (running) {
         tunnelUrl.textContent = 'Starting tunnel…';
         tunnelUrl.classList.add('placeholder');
         tunnelDot.className = 'dot connecting';
         tunnelStatusText.textContent = 'Starting…';
         tunnelStatusText.style.color = 'var(--warning)';
+        if (btnCopyUrl) btnCopyUrl.disabled = true;
       } else {
         tunnelUrl.textContent = 'Install cloudflared: brew install cloudflared';
         tunnelUrl.classList.add('placeholder');
         tunnelDot.className = 'dot error';
         tunnelStatusText.textContent = 'Offline';
         tunnelStatusText.style.color = 'var(--error)';
+        if (btnCopyUrl) btnCopyUrl.disabled = true;
       }
     }
 
