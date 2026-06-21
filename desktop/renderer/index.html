@@ -84,8 +84,10 @@
     }
     .btn:hover { background: var(--card); border-color: var(--accent); }
     .btn:active { transform: scale(0.97); }
+    .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-primary { background: var(--accent); border-color: var(--accent); color: white; }
-    .btn-primary:hover { background: #7C3AED; }
+    .btn-primary:hover:not(:disabled) { background: #7C3AED; }
 
     /* Status */
     .status-section {
@@ -153,9 +155,9 @@
 
     <!-- Actions -->
     <div class="actions">
-      <button class="btn btn-primary" id="btn-new-code">New Code</button>
-      <button class="btn" id="btn-copy-url">Copy URL</button>
-      <button class="btn" id="btn-disconnect">Disconnect</button>
+      <button class="btn btn-primary" id="btn-new-code" aria-label="Generate new pairing code">New Code</button>
+      <button class="btn" id="btn-copy-url" aria-label="Copy connection URL to clipboard">Copy URL</button>
+      <button class="btn" id="btn-disconnect" aria-label="Disconnect all connected devices">Disconnect</button>
     </div>
 
     <!-- Status -->
@@ -193,24 +195,31 @@
     }
 
     function updateTunnel(url, running) {
+      const copyBtn = $('btn-copy-url');
       if (url) {
         tunnelUrl.textContent = url.replace('https://', 'wss://');
         tunnelUrl.classList.remove('placeholder');
         tunnelDot.className = 'dot active';
         tunnelStatusText.textContent = 'Live';
         tunnelStatusText.style.color = 'var(--success)';
+        copyBtn.disabled = false;
+        copyBtn.title = "Copy connection URL to clipboard";
       } else if (running) {
         tunnelUrl.textContent = 'Starting tunnel…';
         tunnelUrl.classList.add('placeholder');
         tunnelDot.className = 'dot connecting';
         tunnelStatusText.textContent = 'Starting…';
         tunnelStatusText.style.color = 'var(--warning)';
+        copyBtn.disabled = true;
+        copyBtn.title = "Waiting for tunnel…";
       } else {
         tunnelUrl.textContent = 'Install cloudflared: brew install cloudflared';
         tunnelUrl.classList.add('placeholder');
         tunnelDot.className = 'dot error';
         tunnelStatusText.textContent = 'Offline';
         tunnelStatusText.style.color = 'var(--error)';
+        copyBtn.disabled = true;
+        copyBtn.title = "Tunnel offline";
       }
     }
 
@@ -257,8 +266,16 @@
     }
 
     $('btn-new-code').addEventListener('click', async () => {
-      await window.kiropad.regenerateCode();
-      startExpiryTimer();
+      const btn = $('btn-new-code');
+      btn.disabled = true;
+      btn.textContent = 'Generating…';
+      try {
+        await window.kiropad.regenerateCode();
+        startExpiryTimer();
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'New Code';
+      }
     });
     $('btn-copy-url').addEventListener('click', () => {
       const url = tunnelUrl.textContent;
