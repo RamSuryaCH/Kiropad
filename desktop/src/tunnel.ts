@@ -77,17 +77,22 @@ export class TunnelManager extends EventEmitter {
     // cloudflared prints the tunnel URL to stderr
     let stderrBuffer = '';
     proc.stderr?.on('data', (data: Buffer) => {
+      if (this._url) return; // Optimization: Stop processing stream once URL is found
+
       stderrBuffer += data.toString();
       const match = stderrBuffer.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
       if (match && !this._url) {
         this._url = match[0];
         this._running = true;
+        stderrBuffer = ''; // Optimization: Free memory instead of unbounded string growth
         this.emit('url-ready', this._url);
       }
     });
 
     // Also check stdout (some versions print there)
     proc.stdout?.on('data', (data: Buffer) => {
+      if (this._url) return; // Optimization: Stop processing stream once URL is found
+
       const text = data.toString();
       const match = text.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
       if (match && !this._url) {

@@ -1,0 +1,3 @@
+## 2024-06-21 - [Prevent unbounded buffer memory leak in long-running processes]
+**Learning:** Found an unbounded memory growth issue in `tunnel.ts` where `cloudflared` stream chunks were repeatedly appended to `stderrBuffer` for the entire process lifetime. Since `cloudflared` prints connection/disconnection logs continuously, the buffer string could grow infinitely, and running a regex against it repeatedly would lock up CPU and memory.
+**Action:** Always stop collecting and processing data streams immediately after the target information (like a URL) is successfully extracted using early returns `if (targetFound) return;` and clear the buffer variables to free memory `buffer = '';`.
