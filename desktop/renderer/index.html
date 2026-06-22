@@ -128,16 +128,16 @@
       <div class="qr-code" id="qr-container">
         <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
       </div>
-      <div class="code-row" id="code-digits">
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
+      <div class="code-row" id="code-digits" tabindex="0" role="group" aria-label="Pairing code: pending">
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
       </div>
       <p class="code-expiry">Code expires in <span id="expiry-timer">5:00</span></p>
       <p class="qr-hint">Or manually: copy URL below → paste in app → enter code</p>
     </div>
 
     <!-- Lockout banner -->
-    <div class="lockout-banner" id="lockout-banner">
+    <div class="lockout-banner" id="lockout-banner" role="alert">
       ⚠️ Too many failed attempts. Pairing locked for <span id="lockout-time">5:00</span>
     </div>
 
@@ -168,7 +168,7 @@
       </div>
       <div class="status-row">
         <span class="status-label">Devices</span>
-        <span class="status-value" id="device-count">0 connected</span>
+        <span class="status-value" id="device-count" aria-live="polite">0 connected</span>
       </div>
     </div>
 
@@ -191,7 +191,8 @@
     const lockoutTime = $('lockout-time');
 
     function updateCodeDisplay(code) {
-      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit">${d}</div>`).join('');
+      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit" aria-hidden="true">${d}</div>`).join('');
+      codeDigits.setAttribute('aria-label', `Pairing code: ${code.split('').join(' ')}`);
     }
 
     function updateTunnel(url, running) {
@@ -269,20 +270,27 @@
       const btn = $('btn-new-code');
       btn.disabled = true;
       btn.textContent = 'Generating…';
+      btn.setAttribute('aria-label', 'Generating new pairing code');
       try {
         await window.kiropad.regenerateCode();
         startExpiryTimer();
       } finally {
         btn.disabled = false;
         btn.textContent = 'New Code';
+        btn.setAttribute('aria-label', 'Generate new pairing code');
       }
     });
     $('btn-copy-url').addEventListener('click', () => {
       const url = tunnelUrl.textContent;
       if (url && !tunnelUrl.classList.contains('placeholder')) {
         navigator.clipboard.writeText(url);
-        $('btn-copy-url').textContent = 'Copied!';
-        setTimeout(() => { $('btn-copy-url').textContent = 'Copy URL'; }, 2000);
+        const btn = $('btn-copy-url');
+        btn.textContent = 'Copied!';
+        btn.setAttribute('aria-label', 'Copied connection URL to clipboard');
+        setTimeout(() => {
+          btn.textContent = 'Copy URL';
+          btn.setAttribute('aria-label', 'Copy connection URL to clipboard');
+        }, 2000);
       }
     });
     $('btn-disconnect').addEventListener('click', () => window.kiropad.disconnectAll());
