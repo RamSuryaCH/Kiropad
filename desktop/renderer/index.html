@@ -128,9 +128,9 @@
       <div class="qr-code" id="qr-container">
         <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
       </div>
-      <div class="code-row" id="code-digits">
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
+      <div class="code-row" id="code-digits" role="group" aria-label="Pairing code: - - - - - -">
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
       </div>
       <p class="code-expiry">Code expires in <span id="expiry-timer">5:00</span></p>
       <p class="qr-hint">Or manually: copy URL below → paste in app → enter code</p>
@@ -191,7 +191,8 @@
     const lockoutTime = $('lockout-time');
 
     function updateCodeDisplay(code) {
-      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit">${d}</div>`).join('');
+      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit" aria-hidden="true">${d}</div>`).join('');
+      codeDigits.setAttribute('aria-label', `Pairing code: ${code.split('').join(' ')}`);
     }
 
     function updateTunnel(url, running) {
@@ -269,12 +270,14 @@
       const btn = $('btn-new-code');
       btn.disabled = true;
       btn.textContent = 'Generating…';
+      btn.setAttribute('aria-label', 'Generating new pairing code');
       try {
         await window.kiropad.regenerateCode();
         startExpiryTimer();
       } finally {
         btn.disabled = false;
         btn.textContent = 'New Code';
+        btn.setAttribute('aria-label', 'Generate new pairing code');
       }
     });
     $('btn-copy-url').addEventListener('click', () => {
@@ -282,7 +285,11 @@
       if (url && !tunnelUrl.classList.contains('placeholder')) {
         navigator.clipboard.writeText(url);
         $('btn-copy-url').textContent = 'Copied!';
-        setTimeout(() => { $('btn-copy-url').textContent = 'Copy URL'; }, 2000);
+        $('btn-copy-url').setAttribute('aria-label', 'Copied connection URL to clipboard');
+        setTimeout(() => {
+          $('btn-copy-url').textContent = 'Copy URL';
+          $('btn-copy-url').setAttribute('aria-label', 'Copy connection URL to clipboard');
+        }, 2000);
       }
     });
     $('btn-disconnect').addEventListener('click', () => window.kiropad.disconnectAll());
