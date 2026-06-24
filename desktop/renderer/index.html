@@ -128,7 +128,7 @@
       <div class="qr-code" id="qr-container">
         <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
       </div>
-      <div class="code-row" id="code-digits">
+      <div class="code-row" id="code-digits" aria-label="Pairing code: - - - - - -" aria-live="polite">
         <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
         <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
       </div>
@@ -192,6 +192,7 @@
 
     function updateCodeDisplay(code) {
       codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit">${d}</div>`).join('');
+      codeDigits.setAttribute('aria-label', `Pairing code: ${code.split('').join(' ')}`);
     }
 
     function updateTunnel(url, running) {
