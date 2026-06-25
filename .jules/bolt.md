@@ -1,0 +1,3 @@
+## 2024-06-25 - Cache local IP to avoid frequent synchronous system calls
+**Learning:** `os.networkInterfaces()` is a synchronous, blocking system call. Calling it in frequently accessed code paths (like polling for the local IP) causes main thread performance degradation.
+**Action:** When working with system or OS calls in frequently called functions or loops, cache the results with an appropriate TTL instead of querying every time.
