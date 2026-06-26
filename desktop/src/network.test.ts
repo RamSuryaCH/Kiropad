@@ -1,11 +1,17 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getLocalIP } from './network';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { getLocalIP, resetCache } from './network';
 import os from 'os';
 
 vi.mock('os');
 
 describe('getLocalIP', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
+    resetCache();
+    vi.useRealTimers();
     vi.resetAllMocks();
   });
 
@@ -75,5 +81,22 @@ describe('getLocalIP', () => {
     vi.mocked(os.networkInterfaces).mockReturnValue({});
 
     expect(getLocalIP()).toBe('127.0.0.1');
+  });
+
+  it('caches the IP address and uses TTL', () => {
+    vi.mocked(os.networkInterfaces).mockReturnValue({
+      en0: [{ address: '192.168.1.5', family: 'IPv4', internal: false } as any],
+    });
+
+    expect(getLocalIP()).toBe('192.168.1.5');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(1);
+
+    expect(getLocalIP()).toBe('192.168.1.5');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(1);
+
+    vi.advanceTimersByTime(60001);
+
+    expect(getLocalIP()).toBe('192.168.1.5');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(2);
   });
 });
