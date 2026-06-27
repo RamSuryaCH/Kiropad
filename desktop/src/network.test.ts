@@ -1,12 +1,18 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getLocalIP } from './network';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { getLocalIP, resetCache } from './network';
 import os from 'os';
 
 vi.mock('os');
 
 describe('getLocalIP', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
     vi.resetAllMocks();
+    resetCache();
+    vi.useRealTimers();
   });
 
   it('prefers en0 (macOS Wi-Fi) over other interfaces', () => {
@@ -75,5 +81,31 @@ describe('getLocalIP', () => {
     vi.mocked(os.networkInterfaces).mockReturnValue({});
 
     expect(getLocalIP()).toBe('127.0.0.1');
+  });
+
+  it('caches the IP and respects the TTL', () => {
+    vi.mocked(os.networkInterfaces).mockReturnValue({
+      en0: [{ address: '192.168.1.5', family: 'IPv4', internal: false } as any],
+    });
+
+    // First call: calls os.networkInterfaces
+    expect(getLocalIP()).toBe('192.168.1.5');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(1);
+
+    // Second call immediately after: uses cache, no new call to os.networkInterfaces
+    expect(getLocalIP()).toBe('192.168.1.5');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(1);
+
+    // Advance time past TTL (10 seconds)
+    vi.advanceTimersByTime(11000);
+
+    // Change the mocked network interface for the next call
+    vi.mocked(os.networkInterfaces).mockReturnValue({
+      en0: [{ address: '192.168.1.6', family: 'IPv4', internal: false } as any],
+    });
+
+    // Third call: cache should be expired, calls os.networkInterfaces again
+    expect(getLocalIP()).toBe('192.168.1.6');
+    expect(os.networkInterfaces).toHaveBeenCalledTimes(2);
   });
 });
