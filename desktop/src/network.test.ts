@@ -1,12 +1,18 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { getLocalIP } from './network';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
+import { getLocalIP, resetCache } from './network';
 import os from 'os';
 
 vi.mock('os');
 
 describe('getLocalIP', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   afterEach(() => {
+    vi.useRealTimers();
     vi.resetAllMocks();
+    resetCache();
   });
 
   it('prefers en0 (macOS Wi-Fi) over other interfaces', () => {
@@ -75,5 +81,27 @@ describe('getLocalIP', () => {
     vi.mocked(os.networkInterfaces).mockReturnValue({});
 
     expect(getLocalIP()).toBe('127.0.0.1');
+  });
+
+  it('caches the IP address to prevent blocking the main thread', () => {
+    vi.mocked(os.networkInterfaces).mockReturnValue({
+      en0: [{ address: '192.168.1.5', family: 'IPv4', internal: false } as any],
+    });
+
+    expect(getLocalIP()).toBe('192.168.1.5');
+
+    // Change the mocked network interface
+    vi.mocked(os.networkInterfaces).mockReturnValue({
+      en0: [{ address: '192.168.1.100', family: 'IPv4', internal: false } as any],
+    });
+
+    // It should still return the cached IP
+    expect(getLocalIP()).toBe('192.168.1.5');
+
+    // Advance time past the TTL (30 seconds)
+    vi.advanceTimersByTime(30001);
+
+    // It should return the new IP now
+    expect(getLocalIP()).toBe('192.168.1.100');
   });
 });
