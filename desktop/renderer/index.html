@@ -44,6 +44,8 @@
     .qr-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
     .qr-hint { font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4; }
 
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
+
     /* Code display (below QR) */
     .code-row { display: flex; justify-content: center; gap: 6px; margin: 10px 0 4px; }
     .code-digit {
@@ -128,9 +130,10 @@
       <div class="qr-code" id="qr-container">
         <div class="qr-placeholder" id="qr-placeholder">Waiting for tunnel…</div>
       </div>
-      <div class="code-row" id="code-digits">
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
-        <div class="code-digit">-</div><div class="code-digit">-</div><div class="code-digit">-</div>
+      <div class="code-row" id="code-digits" role="status" aria-live="polite">
+        <span class="sr-only" id="sr-code">Pairing code: - - - - - -</span>
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
+        <div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div><div class="code-digit" aria-hidden="true">-</div>
       </div>
       <p class="code-expiry">Code expires in <span id="expiry-timer">5:00</span></p>
       <p class="qr-hint">Or manually: copy URL below → paste in app → enter code</p>
@@ -191,7 +194,9 @@
     const lockoutTime = $('lockout-time');
 
     function updateCodeDisplay(code) {
-      codeDigits.innerHTML = code.split('').map(d => `<div class="code-digit">${d}</div>`).join('');
+      const visualDigits = code.split('').map(d => `<div class="code-digit" aria-hidden="true">${d}</div>`).join('');
+      const srText = `<span class="sr-only" id="sr-code">Pairing code: ${code.split('').join(' ')}</span>`;
+      codeDigits.innerHTML = srText + visualDigits;
     }
 
     function updateTunnel(url, running) {
