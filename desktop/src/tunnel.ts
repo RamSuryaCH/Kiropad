@@ -77,20 +77,23 @@ export class TunnelManager extends EventEmitter {
     // cloudflared prints the tunnel URL to stderr
     let stderrBuffer = '';
     proc.stderr?.on('data', (data: Buffer) => {
+      if (this._url) return;
       stderrBuffer += data.toString();
       const match = stderrBuffer.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
-      if (match && !this._url) {
+      if (match) {
         this._url = match[0];
         this._running = true;
+        stderrBuffer = ''; // Free memory
         this.emit('url-ready', this._url);
       }
     });
 
     // Also check stdout (some versions print there)
     proc.stdout?.on('data', (data: Buffer) => {
+      if (this._url) return;
       const text = data.toString();
       const match = text.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
-      if (match && !this._url) {
+      if (match) {
         this._url = match[0];
         this._running = true;
         this.emit('url-ready', this._url);
