@@ -174,7 +174,7 @@
       </div>
       <div class="status-row">
         <span class="status-label">Devices</span>
-        <span class="status-value" id="device-count">0 connected</span>
+        <span class="status-value" id="device-count" aria-live="polite">0 connected</span>
       </div>
     </div>
 
@@ -243,6 +243,14 @@
       if (state.pairingCode) updateCodeDisplay(state.pairingCode);
       if (typeof state.connectedDevices === 'number') {
         $('device-count').textContent = `${state.connectedDevices} connected`;
+        const btnDisconnect = $('btn-disconnect');
+        if (state.connectedDevices === 0) {
+          btnDisconnect.disabled = true;
+          btnDisconnect.title = "No devices connected";
+        } else {
+          btnDisconnect.disabled = false;
+          btnDisconnect.title = "Disconnect all connected devices";
+        }
       }
       if (typeof state.isRunning === 'boolean') {
         $('status-dot').className = state.isRunning ? 'status-dot' : 'status-dot offline';
