@@ -5,3 +5,6 @@
 ## 2024-10-24 - Cohesive Screen Reader Announcements for OTP Digits
 **Learning:** Screen readers read individual dynamic digits disjointedly when split into separate elements. Generic elements with aria-label are ignored without semantic roles.
 **Action:** Use a visually hidden (.sr-only) text node inside an aria-live container to announce space-separated digits cohesively, while hiding visual digits with aria-hidden="true".
+## 2026-07-01 - Dynamic Action Button State
+**Learning:** Disconnect buttons remained active even when no devices were connected, confusing users on state.
+**Action:** Always bind the 'disabled' property and 'title' of state-dependent action buttons directly to the current state data.
