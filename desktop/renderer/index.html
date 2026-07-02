@@ -243,6 +243,15 @@
       if (state.pairingCode) updateCodeDisplay(state.pairingCode);
       if (typeof state.connectedDevices === 'number') {
         $('device-count').textContent = `${state.connectedDevices} connected`;
+
+        const disconnectBtn = $('btn-disconnect');
+        if (state.connectedDevices === 0) {
+          disconnectBtn.disabled = true;
+          disconnectBtn.title = 'No devices connected';
+        } else {
+          disconnectBtn.disabled = false;
+          disconnectBtn.title = 'Disconnect all connected devices';
+        }
       }
       if (typeof state.isRunning === 'boolean') {
         $('status-dot').className = state.isRunning ? 'status-dot' : 'status-dot offline';
