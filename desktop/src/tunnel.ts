@@ -77,23 +77,40 @@ export class TunnelManager extends EventEmitter {
     // cloudflared prints the tunnel URL to stderr
     let stderrBuffer = '';
     proc.stderr?.on('data', (data: Buffer) => {
+      // Performance optimization: skip processing if URL is already found
+      if (this._url) return;
+
       stderrBuffer += data.toString();
       const match = stderrBuffer.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
       if (match && !this._url) {
         this._url = match[0];
         this._running = true;
+        // Performance optimization: clear buffer to prevent memory leaks and regex bottleneck
+        stderrBuffer = '';
         this.emit('url-ready', this._url);
+      } else if (stderrBuffer.length > 4096) {
+        // Prevent unbounded memory growth if URL is not found
+        stderrBuffer = stderrBuffer.slice(-2048);
       }
     });
 
+    let stdoutBuffer = '';
     // Also check stdout (some versions print there)
     proc.stdout?.on('data', (data: Buffer) => {
-      const text = data.toString();
-      const match = text.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
+      // Performance optimization: skip processing if URL is already found
+      if (this._url) return;
+
+      stdoutBuffer += data.toString();
+      const match = stdoutBuffer.match(/https:\/\/[a-z0-9-]+\.trycloudflare\.com/);
       if (match && !this._url) {
         this._url = match[0];
         this._running = true;
+        // Performance optimization: clear buffer to prevent memory leaks and regex bottleneck
+        stdoutBuffer = '';
         this.emit('url-ready', this._url);
+      } else if (stdoutBuffer.length > 4096) {
+        // Prevent unbounded memory growth if URL is not found
+        stdoutBuffer = stdoutBuffer.slice(-2048);
       }
     });
 
